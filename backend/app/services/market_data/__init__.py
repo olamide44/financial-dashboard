@@ -1,6 +1,7 @@
 from core.config import settings
 from .alpha_vantage import AlphaVantageProvider
 from .base import MarketDataProvider
+from core.config import settings
 
 _provider: MarketDataProvider | None = None
 

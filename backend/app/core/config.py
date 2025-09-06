@@ -34,6 +34,9 @@ class Settings(BaseSettings):
 
     risk_free_rate_annual: float = 0.03
     default_benchmark: str = "SPY"
+    
+    alpha_vantage_key: Optional[str] = None  # get a free key at https://www.alphavantage.co/support/#api-key
+    use_provider: str = "alpha_vantage"  # only one implemented so far
 
     @field_validator("cors_origins", mode="before")
     @classmethod
