@@ -1,6 +1,6 @@
 from db import models  # noqa: E402
 from db.database import Base, engine
 
-
-def init_db():
+if __name__ == "__main__":
     Base.metadata.create_all(bind=engine)
+    print("✅ Tables created")
