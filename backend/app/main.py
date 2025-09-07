@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from core.config import settings
-import init_db
+from init_db import init_db
 from api.router import api_router
 from core.logging import setup_logging
 from contextlib import asynccontextmanager
@@ -13,7 +13,7 @@ setup_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db()
+    init_db()
     if settings.run_jobs:
         start_scheduler()
     yield

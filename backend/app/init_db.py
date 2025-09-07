@@ -1,6 +1,7 @@
-from db import models  # noqa: E402
-from db.database import Base, engine
+# init_db.py  (sync)
+from db import models                  # ensure models are imported/registered
+from db.database import Base, engine   # regular Engine
 
-if __name__ == "__main__":
+def init_db() -> None:
     Base.metadata.create_all(bind=engine)
-    print("✅ Tables created")
+    print("Database initialized.")
