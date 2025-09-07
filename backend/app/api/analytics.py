@@ -13,7 +13,7 @@ from services.analytics import (
     equity_curve_from_holdings, pct_returns, max_drawdown,
     annualized_stats, cagr, sharpe_sortino, benchmark_series
 )
-from app.core.config import settings
+from core.config import settings
 
 router = APIRouter()
 

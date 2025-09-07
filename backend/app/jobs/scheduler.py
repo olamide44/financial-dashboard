@@ -4,8 +4,8 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from app.core.config import settings
-from app.jobs.tasks import nightly_backfill_prices, intraday_refresh_prices
+from core.config import settings
+from jobs.tasks import nightly_backfill_prices, intraday_refresh_prices
 
 # Create a scheduler scoped to the configured timezone
 scheduler = AsyncIOScheduler(timezone=settings.jobs_timezone)
