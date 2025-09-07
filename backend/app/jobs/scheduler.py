@@ -3,50 +3,49 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
-
 from core.config import settings
 from jobs.tasks import nightly_backfill_prices, intraday_refresh_prices
 
-# Create a scheduler scoped to the configured timezone
-scheduler = AsyncIOScheduler(timezone=settings.jobs_timezone)
+# REPLACE the global construction with a lazy singleton:
+_scheduler: AsyncIOScheduler | None = None
 
 def start_scheduler() -> None:
-    """
-    Configure and start the APScheduler instance based on environment settings.
-    """
-    # Parse the HH:MM string from settings.backfill_at
-    try:
-        backfill_hour, backfill_minute = map(int, settings.backfill_at.split(":"))
-    except ValueError:
-        raise ValueError(f"Invalid BACKFILL_AT value: {settings.backfill_at}")
+    global _scheduler
+    if _scheduler is not None:
+        return
 
-    # Schedule the nightly backfill job
-    scheduler.add_job(
+    # construct after settings are loaded
+    _scheduler = AsyncIOScheduler(timezone=settings.jobs_timezone)
+
+    # parse "HH:MM"
+    try:
+        hh, mm = (int(x) for x in settings.backfill_at.split(":"))
+    except Exception as e:
+        raise ValueError(f"Invalid BACKFILL_AT='{settings.backfill_at}'") from e
+
+    _scheduler.add_job(
         nightly_backfill_prices,
-        CronTrigger(hour=backfill_hour, minute=backfill_minute),
+        CronTrigger(hour=hh, minute=mm, timezone=settings.jobs_timezone),
         id="nightly_backfill_prices",
-        name="Nightly Backfill Prices",
         max_instances=1,
         coalesce=True,
-        misfire_grace_time=3600,  # 1 hour grace
+        misfire_grace_time=600,
     )
 
-    # Schedule the intraday refresh job if enabled
     if settings.intraday_enable:
-        scheduler.add_job(
+        _scheduler.add_job(
             intraday_refresh_prices,
-            IntervalTrigger(seconds=settings.intraday_interval_sec),
+            IntervalTrigger(seconds=max(5, settings.intraday_interval_sec), timezone=settings.jobs_timezone),
             id="intraday_refresh_prices",
-            name="Intraday Refresh Prices",
             max_instances=1,
             coalesce=True,
-            misfire_grace_time=60,  # 1 minute grace
+            misfire_grace_time=120,
         )
 
-    scheduler.start()
+    _scheduler.start()
 
 def shutdown_scheduler() -> None:
-    """
-    Shut down the scheduler gracefully.
-    """
-    scheduler.shutdown(wait=False)
+    global _scheduler
+    if _scheduler:
+        _scheduler.shutdown(wait=False)
+        _scheduler = None

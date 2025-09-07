@@ -37,6 +37,18 @@ class Settings(BaseSettings):
     
     alpha_vantage_key: Optional[str] = None  # get a free key at https://www.alphavantage.co/support/#api-key
     use_provider: str = "alpha_vantage"  # only one implemented so far
+    
+    # Scheduler settings (NEW)
+    run_jobs: bool = True
+    jobs_timezone: str = "Europe/Dublin"
+    backfill_at: str = "02:30"  # HH:MM
+    backfill_default_lookback_days: int = 1825
+    intraday_enable: bool = False
+    intraday_interval_sec: int = 60
+    intraday_hours_local: str = "14-21"  # local 24h window
+    active_symbols_limit: int = 10
+    provider_rpm: int = 5
+
 
     @field_validator("cors_origins", mode="before")
     @classmethod
