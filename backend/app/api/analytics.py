@@ -6,10 +6,10 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app.core.deps import get_db, get_current_user
-from app.db import models
-from app.services import indicators as ind
-from app.services.analytics import (
+from core.deps import get_db, get_current_user
+from db import models
+from services import indicators as ind
+from services.analytics import (
     equity_curve_from_holdings, pct_returns, max_drawdown,
     annualized_stats, cagr, sharpe_sortino, benchmark_series
 )
