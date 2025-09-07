@@ -5,9 +5,9 @@ from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app.core.deps import get_db, get_current_user
-from app.db import models
-from app.core.config import settings
+from core.deps import get_db, get_current_user
+from db import models
+from core.config import settings
 
 router = APIRouter()
 

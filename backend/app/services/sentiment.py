@@ -3,7 +3,7 @@ import logging, hashlib
 from typing import Iterable, List, Dict, Tuple
 from dataclasses import dataclass
 
-from app.core.config import settings
+from core.config import settings
 
 log = logging.getLogger("sentiment")
 

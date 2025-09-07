@@ -4,9 +4,9 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, Any, List, Optional
 
 from sqlalchemy.orm import Session
-from app.core.config import settings
-from app.db import models
-from app.services.sentiment import sentiment_engine
+from core.config import settings
+from db import models
+from services.sentiment import sentiment_engine
 
 log = logging.getLogger("news")
 
