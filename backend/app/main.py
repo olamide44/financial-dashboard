@@ -7,11 +7,20 @@ from core.logging import setup_logging
 from contextlib import asynccontextmanager
 import uvicorn
 import os
+from jobs.scheduler import start_scheduler, shutdown_scheduler
 
 setup_logging()
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    if settings.run_jobs:
+        start_scheduler()
+    yield
+    if settings.run_jobs:
+        shutdown_scheduler()
 
-app = FastAPI(title="AI Finance Dashboard API", version="0.1.0")
+app = FastAPI(lifespan=lifespan, title="AI Finance Dashboard API", version="0.1.0")
 
 
 app.add_middleware(
@@ -21,11 +30,6 @@ allow_credentials=True,
 allow_methods=["*"],
 allow_headers=["*"],
 )
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    init_db()
-    yield
 
 
 app.include_router(api_router)

@@ -87,3 +87,27 @@ class Price(Base):
     UniqueConstraint("instrument_id", "ts", name="uq_price_instrument_ts"),
     Index("ix_prices_inst_ts_desc", "instrument_id", "ts"),
     )
+    
+class Benchmark(Base):
+    __tablename__ = "benchmarks"
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    symbol: Mapped[str] = mapped_column(String(32), unique=True, index=True, nullable=False)
+    name: Mapped[str | None] = mapped_column(String(128))
+    type: Mapped[str | None] = mapped_column(String(32))  # ETF, Index, etc.
+
+class BenchmarkPrice(Base):
+    __tablename__ = "benchmark_prices"
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    benchmark_id: Mapped[int] = mapped_column(ForeignKey("benchmarks.id", ondelete="CASCADE"), index=True)
+    ts: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    open: Mapped[float] = mapped_column(Numeric(18,6))
+    high: Mapped[float] = mapped_column(Numeric(18,6))
+    low: Mapped[float] = mapped_column(Numeric(18,6))
+    close: Mapped[float] = mapped_column(Numeric(18,6))
+    volume: Mapped[int | None] = mapped_column(BigInteger)
+    source: Mapped[str | None] = mapped_column(String(32))
+
+    __table_args__ = (
+        UniqueConstraint("benchmark_id", "ts", name="uq_bench_price_ts"),
+        Index("ix_bench_ts", "benchmark_id", "ts"),
+    )

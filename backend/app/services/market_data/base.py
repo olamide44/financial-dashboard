@@ -9,8 +9,10 @@ InstrumentInfo = Dict[str, object]  # {"symbol": str, "exchange": str|None, "nam
 class MarketDataProvider(ABC):
     @abstractmethod
     def search(self, query: str, limit: int = 5) -> List[InstrumentInfo]:
+        """Return a list of instruments matching the query."""
         ...
 
     @abstractmethod
     def daily_prices(self, symbol: str, start: Optional[date] = None, end: Optional[date] = None) -> List[PriceBar]:
+        """Yield daily price candles for the given symbol."""
         ...
