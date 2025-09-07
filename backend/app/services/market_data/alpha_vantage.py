@@ -40,26 +40,45 @@ class AlphaVantageProvider(MarketDataProvider):
         return out
 
     def daily_prices(self, symbol: str, start: Optional[date] = None, end: Optional[date] = None) -> List[PriceBar]:
-        data = self._get({
-            "function": "TIME_SERIES_DAILY_ADJUSTED",
-            "symbol": symbol,
-            "outputsize": "full",
-        })
-        series = data.get("Time Series (Daily)", {})
-        rows: List[PriceBar] = []
-        for k, v in series.items():
-            ts = datetime.strptime(k, "%Y-%m-%d")
-            if start and ts.date() < start:
+        """
+        Fetch daily OHLCV. Try ADJUSTED first; if AV says 'premium' or similar, fall back to DAILY.
+        """
+        funcs = ["TIME_SERIES_DAILY_ADJUSTED", "TIME_SERIES_DAILY"]
+        last_err: Exception | None = None
+
+        for fn in funcs:
+            try:
+                data = self._get({
+                    "function": fn,
+                    "symbol": symbol,
+                    "outputsize": "full",
+                })
+                series = data.get("Time Series (Daily)", {})
+                if not isinstance(series, dict) or not series:
+                    raise RuntimeError(f"No daily data in response for {symbol} ({fn})")
+
+                rows: List[PriceBar] = []
+                for k, v in series.items():
+                    ts = datetime.strptime(k, "%Y-%m-%d")
+                    if start and ts.date() < start:
+                        continue
+                    if end and ts.date() > end:
+                        continue
+                    rows.append({
+                        "ts": ts,
+                        "open": float(v["1. open"]),
+                        "high": float(v["2. high"]),
+                        "low": float(v["3. low"]),
+                        "close": float(v["4. close"]),
+                        "volume": int(v.get("6. volume", 0)),
+                    })
+                rows.sort(key=lambda r: r["ts"])
+                return rows
+            except Exception as e:
+                # Keep the last error; try the next function as a fallback
+                last_err = e
                 continue
-            if end and ts.date() > end:
-                continue
-            rows.append({
-                "ts": ts,
-                "open": float(v["1. open"]),
-                "high": float(v["2. high"]),
-                "low": float(v["3. low"]),
-                "close": float(v["4. close"]),
-                "volume": int(v.get("6. volume", 0)),
-            })
-        rows.sort(key=lambda r: r["ts"])  # ascending time
-        return rows
+
+        # If both calls failed, raise the last one
+        assert last_err is not None
+        raise last_err
