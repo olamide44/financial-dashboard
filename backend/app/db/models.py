@@ -111,3 +111,25 @@ class BenchmarkPrice(Base):
         UniqueConstraint("benchmark_id", "ts", name="uq_bench_price_ts"),
         Index("ix_bench_ts", "benchmark_id", "ts"),
     )
+
+class NewsArticle(Base):
+    __tablename__ = "news_articles"
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    instrument_id: Mapped[int] = mapped_column(ForeignKey("instruments.id", ondelete="CASCADE"), index=True)
+    symbol: Mapped[str] = mapped_column(String(32), index=True)
+    title: Mapped[str] = mapped_column(String(512))
+    description: Mapped[str | None] = mapped_column(String(4000))
+    source_name: Mapped[str | None] = mapped_column(String(128))
+    url: Mapped[str] = mapped_column(String(1024))
+    url_hash: Mapped[str] = mapped_column(String(64), index=True)  # sha256
+    image_url: Mapped[str | None] = mapped_column(String(1024))
+    published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    # sentiment
+    sentiment_label: Mapped[str | None] = mapped_column(String(12))  # positive|neutral|negative
+    sentiment_score: Mapped[float | None] = mapped_column(Numeric(6,5))  # top prob in [0,1]
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=text("NOW()"))
+
+    __table_args__ = (
+        UniqueConstraint("url_hash", name="uq_news_urlhash"),
+        Index("ix_news_inst_pub", "instrument_id", "published_at"),
+    )

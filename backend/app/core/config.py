@@ -48,6 +48,21 @@ class Settings(BaseSettings):
     intraday_hours_local: str = "14-21"  # local 24h window
     active_symbols_limit: int = 10
     provider_rpm: int = 5
+    
+    # News
+    newsapi_key: str | None = None
+    enable_news_jobs: bool = True
+    news_poll_interval_min: int = 15
+    news_window_days: int = 3
+    news_lang: str = "en"
+    news_sources: str | None = None
+    news_max_per_symbol: int = 20
+
+    # Sentiment
+    sentiment_model: str = "ProsusAI/finbert"
+    sentiment_batch_size: int = 16
+    sentiment_min_chars: int = 20
+
 
 
     @field_validator("cors_origins", mode="before")

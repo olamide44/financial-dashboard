@@ -3,12 +3,46 @@ from typing import Iterable
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
-
+from services.news import fetch_news_for_symbol, upsert_news_and_score
 from core.config import settings
 from db.database import SessionLocal
 from db.models import Instrument, Price, Holding
 from services.market_data import get_provider
 from db import models
+import logging
+
+
+log = logging.getLogger("jobs")
+
+def poll_news_for_tracked_instruments():
+    """
+    Fetch recent news for tracked instruments (those in holdings),
+    score sentiment, and store. Runs every NEWS_POLL_INTERVAL_MIN if enabled.
+    """
+    if not settings.enable_news_jobs:
+        return
+    db = SessionLocal()
+    try:
+        tracked = (
+            db.query(models.Instrument)
+              .join(models.Holding, models.Holding.instrument_id == models.Instrument.id)
+              .group_by(models.Instrument.id)
+              .all()
+        )
+        total = 0
+        for inst in tracked:
+            try:
+                arts = fetch_news_for_symbol(inst.symbol)
+                ins = upsert_news_and_score(db, inst, arts)
+                total += ins
+                log.info("news_ingest", extra={"symbol": inst.symbol, "inserted": ins})
+            except Exception:
+                log.exception("news_ingest_failed", extra={"symbol": inst.symbol})
+        if total:
+            log.info("news_ingest_total", extra={"inserted": total})
+    finally:
+        db.close()
+
 
 def _backfill_benchmark(db: Session):
     sym = (settings.default_benchmark or "").strip().upper()

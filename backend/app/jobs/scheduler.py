@@ -4,7 +4,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from core.config import settings
-from jobs.tasks import nightly_backfill_prices, intraday_refresh_prices
+from jobs.tasks import nightly_backfill_prices, intraday_refresh_prices, poll_news_for_tracked_instruments
 
 # REPLACE the global construction with a lazy singleton:
 _scheduler: AsyncIOScheduler | None = None
@@ -37,6 +37,16 @@ def start_scheduler() -> None:
             intraday_refresh_prices,
             IntervalTrigger(seconds=max(5, settings.intraday_interval_sec), timezone=settings.jobs_timezone),
             id="intraday_refresh_prices",
+            max_instances=1,
+            coalesce=True,
+            misfire_grace_time=120,
+        )
+
+    if settings.enable_news_jobs:
+        _scheduler.add_job(
+            poll_news_for_tracked_instruments,
+            IntervalTrigger(minutes=max(5, settings.news_poll_interval_min), timezone=settings.jobs_timezone),
+            id="poll_news_for_tracked_instruments",
             max_instances=1,
             coalesce=True,
             misfire_grace_time=120,
