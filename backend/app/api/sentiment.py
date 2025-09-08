@@ -3,13 +3,13 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import func
+from sqlalchemy import func, case, cast, Date
 from sqlalchemy.orm import Session
 
 from core.deps import get_db, get_current_user
 from db import models
 
-router = APIRouter()
+router = APIRouter() 
 
 def _label_to_signed(label: str) -> int:
     if label == "positive":
@@ -30,13 +30,14 @@ def sentiment_rolling(
         raise HTTPException(404, "Instrument not found")
 
     since = datetime.now(timezone.utc) - timedelta(days=window_days)
+    day_expr = cast(models.NewsArticle.published_at, Date)
 
     rows = (
         db.query(
-            func.date_trunc("day", models.NewsArticle.published_at).label("day"),
+            day_expr.label("day"),
             func.count(models.NewsArticle.id),
             func.sum(
-                func.case(
+                case(
                     (
                         (models.NewsArticle.sentiment_label == "positive", 1),
                     ),
@@ -44,7 +45,7 @@ def sentiment_rolling(
                 )
             ).label("pos"),
             func.sum(
-                func.case(
+                case(
                     (
                         (models.NewsArticle.sentiment_label == "negative", 1),
                     ),
@@ -52,7 +53,7 @@ def sentiment_rolling(
                 )
             ).label("neg"),
             func.sum(
-                func.case(
+                case(
                     (
                         (models.NewsArticle.sentiment_label == "neutral", 1),
                     ),
