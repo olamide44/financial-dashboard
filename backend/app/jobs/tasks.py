@@ -3,11 +3,13 @@ from typing import Iterable
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
-from services.news import fetch_news_for_symbol, upsert_news_and_score
 from core.config import settings
 from db.database import SessionLocal
 from db.models import Instrument, Price, Holding
+from services.news import fetch_news_for_symbol, upsert_news_and_score
 from services.market_data import get_provider
+from services.forecasts import train_and_forecast_for_instrument
+
 from db import models
 import logging
 
@@ -171,3 +173,21 @@ async def intraday_refresh_prices() -> None:
     finally:
         db.close()
 
+def nightly_forecasts_for_tracked():
+    if not settings.ml_enable:
+        return
+    db = SessionLocal()
+    try:
+        tracked = (
+            db.query(models.Instrument)
+              .join(models.Holding, models.Holding.instrument_id == models.Instrument.id)
+              .group_by(models.Instrument.id)
+              .all()
+        )
+        for inst in tracked:
+            try:
+                train_and_forecast_for_instrument(db, inst.id, None, None, None)
+            except Exception:
+                log.exception("nightly_forecast_failed", extra={"symbol": inst.symbol})
+    finally:
+        db.close()

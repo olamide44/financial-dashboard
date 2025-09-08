@@ -4,7 +4,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from core.config import settings
-from jobs.tasks import nightly_backfill_prices, intraday_refresh_prices, poll_news_for_tracked_instruments
+from jobs.tasks import nightly_backfill_prices, intraday_refresh_prices, poll_news_for_tracked_instruments, nightly_forecasts_for_tracked
 
 # REPLACE the global construction with a lazy singleton:
 _scheduler: AsyncIOScheduler | None = None
@@ -31,6 +31,16 @@ def start_scheduler() -> None:
         coalesce=True,
         misfire_grace_time=600,
     )
+    
+    if settings.ml_enable:
+        _scheduler.add_job(
+            nightly_forecasts_for_tracked,
+            CronTrigger(hour=3, minute=0, timezone=settings.jobs_timezone),
+            id="nightly_forecasts_for_tracked",
+            max_instances=1,
+            coalesce=True,
+            misfire_grace_time=600,
+        )
 
     if settings.intraday_enable:
         _scheduler.add_job(

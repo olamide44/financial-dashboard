@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, DateTime, ForeignKey, Numeric, Text, BigInteger, UniqueConstraint, Index, text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.types import Integer
 from datetime import datetime, timezone
 import uuid
 from db.database import Base
@@ -132,4 +133,31 @@ class NewsArticle(Base):
     __table_args__ = (
         UniqueConstraint("url_hash", name="uq_news_urlhash"),
         Index("ix_news_inst_pub", "instrument_id", "published_at"),
+    )
+    
+    class MLRun(Base):
+        __tablename__ = "ml_runs"
+        id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+        instrument_id: Mapped[int] = mapped_column(ForeignKey("instruments.id", ondelete="CASCADE"), index=True)
+        model_type: Mapped[str] = mapped_column(String(32))  # ridge|lasso|...
+        horizon_days: Mapped[int] = mapped_column(Integer)
+        lookback_days: Mapped[int] = mapped_column(Integer)
+        created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=text("NOW()"))
+        status: Mapped[str] = mapped_column(String(16), default="done")  # done|error
+        metrics: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+        error: Mapped[str | None] = mapped_column(Text)
+
+class Forecast(Base):
+    __tablename__ = "forecasts"
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    run_id: Mapped[int] = mapped_column(ForeignKey("ml_runs.id", ondelete="CASCADE"), index=True)
+    instrument_id: Mapped[int] = mapped_column(ForeignKey("instruments.id", ondelete="CASCADE"), index=True)
+    ts: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    yhat: Mapped[float] = mapped_column(Numeric(18,6))
+    yhat_lower: Mapped[float] = mapped_column(Numeric(18,6))
+    yhat_upper: Mapped[float] = mapped_column(Numeric(18,6))
+
+    __table_args__ = (
+        UniqueConstraint("instrument_id", "ts", name="uq_forecast_inst_ts"),
+        Index("ix_forecast_inst_ts", "instrument_id", "ts"),
     )

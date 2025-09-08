@@ -63,6 +63,13 @@ class Settings(BaseSettings):
     sentiment_batch_size: int = 16
     sentiment_min_chars: int = 20
 
+    # ML / Forecasts
+    ml_enable: bool = True
+    forecast_model: str = "ridge"
+    forecast_horizon_days: int = 7
+    forecast_lookback_days: int = 730
+    forecast_band_z: float = 1.96
+
 
 
     @field_validator("cors_origins", mode="before")
