@@ -8,12 +8,13 @@ from sqlalchemy.orm import Session
 from core.deps import get_db, get_current_user
 from db import models
 from services.insights import build_portfolio_snapshot, generate_insight_text
+from uuid import UUID
 
 router = APIRouter()
 
 @router.post("/insights/portfolio/{portfolio_id}")
 def portfolio_insights(
-    portfolio_id: str,
+    portfolio_id: UUID,
     benchmark: Optional[str] = Query(None, description="Override benchmark symbol, e.g. SPY"),
     from_: Optional[str] = Query(None, alias="from"),
     to: Optional[str] = None,

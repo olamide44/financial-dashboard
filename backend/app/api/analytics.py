@@ -14,6 +14,7 @@ from services.analytics import (
     annualized_stats, cagr, sharpe_sortino, benchmark_series
 )
 from core.config import settings
+from uuid import UUID
 
 router = APIRouter()
 
@@ -66,7 +67,7 @@ def get_indicators(
 
 @router.get("/portfolios/{portfolio_id}/performance")
 def portfolio_performance(
-    portfolio_id: str,
+    portfolio_id: UUID,
     benchmark: Optional[str] = Query(None, description="e.g. SPY"),
     from_: Optional[str] = Query(None, alias="from"),
     to: Optional[str] = None,
@@ -117,7 +118,7 @@ def portfolio_performance(
 
 @router.get("/portfolios/{portfolio_id}/stats")
 def portfolio_stats(
-    portfolio_id: str,
+    portfolio_id: UUID,
     from_: Optional[str] = Query(None, alias="from"),
     to: Optional[str] = None,
     db: Session = Depends(get_db),

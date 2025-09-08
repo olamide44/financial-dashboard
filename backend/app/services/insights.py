@@ -14,6 +14,7 @@ from services.analytics import (
     equity_curve_from_holdings, pct_returns, max_drawdown, annualized_stats,
     cagr, sharpe_sortino, benchmark_series
 )
+from uuid import UUID
 
 log = logging.getLogger("insights")
 
@@ -52,7 +53,7 @@ def _weights_and_concentration(holdings: List[HoldingSnapshot]) -> Dict[str, flo
 
 def build_portfolio_snapshot(
     db: Session,
-    portfolio_id: int,
+    portfolio_id: UUID,
     start: Optional[datetime] = None,
     end: Optional[datetime] = None,
     benchmark_symbol: Optional[str] = None,
