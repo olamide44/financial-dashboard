@@ -9,14 +9,7 @@ from sqlalchemy.orm import Session
 from core.deps import get_db, get_current_user
 from db import models
 
-router = APIRouter() 
-
-def _label_to_signed(label: str) -> int:
-    if label == "positive":
-        return 1
-    if label == "negative":
-        return -1
-    return 0
+router = APIRouter()
 
 @router.get("/{instrument_id}")
 def sentiment_rolling(
@@ -30,45 +23,31 @@ def sentiment_rolling(
         raise HTTPException(404, "Instrument not found")
 
     since = datetime.now(timezone.utc) - timedelta(days=window_days)
+
     day_expr = cast(models.NewsArticle.published_at, Date)
 
     rows = (
         db.query(
             day_expr.label("day"),
-            func.count(models.NewsArticle.id),
+            func.count(models.NewsArticle.id).label("total"),
             func.sum(
-                case(
-                    (
-                        (models.NewsArticle.sentiment_label == "positive", 1),
-                    ),
-                    else_=0,
-                )
+                case((models.NewsArticle.sentiment_label == "positive", 1), else_=0)
             ).label("pos"),
             func.sum(
-                case(
-                    (
-                        (models.NewsArticle.sentiment_label == "negative", 1),
-                    ),
-                    else_=0,
-                )
+                case((models.NewsArticle.sentiment_label == "negative", 1), else_=0)
             ).label("neg"),
             func.sum(
-                case(
-                    (
-                        (models.NewsArticle.sentiment_label == "neutral", 1),
-                    ),
-                    else_=0,
-                )
+                case((models.NewsArticle.sentiment_label == "neutral", 1), else_=0)
             ).label("neu"),
         )
         .filter(models.NewsArticle.instrument_id == instrument_id)
         .filter(models.NewsArticle.published_at >= since)
-        .group_by(func.date_trunc("day", models.NewsArticle.published_at))
-        .order_by(func.date_trunc("day", models.NewsArticle.published_at).asc())
+        .group_by(day_expr)
+        .order_by(day_expr.asc())
         .all()
     )
 
-    # build simple net score = (pos - neg) / total per day
+    # Build simple net score = (pos - neg) / total per day
     out = []
     for day, total, pos, neg, neu in rows:
         total = int(total or 0)
