@@ -79,8 +79,8 @@ def build_portfolio_snapshot(
             continue
         val = qty * px
         hs.append(HoldingSnapshot(
-            symbol=h.symbol or db.get(models.Instrument, h.instrument_id).symbol,
-            instrument_id=h.instrument_id, qty=qty, last_close=px, value=val, weight=0.0
+        symbol=db.get(models.Instrument, h.instrument_id).symbol,
+        instrument_id=h.instrument_id, qty=qty, last_close=px, value=val, weight=0.0
         ))
         gross += val
     for i in range(len(hs)):
