@@ -13,7 +13,7 @@ router = APIRouter()
 
 @router.post("/insights/portfolio/{portfolio_id}")
 def portfolio_insights(
-    portfolio_id: int,
+    portfolio_id: str,
     benchmark: Optional[str] = Query(None, description="Override benchmark symbol, e.g. SPY"),
     from_: Optional[str] = Query(None, alias="from"),
     to: Optional[str] = None,
