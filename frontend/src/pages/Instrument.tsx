@@ -41,7 +41,7 @@ export default function Instrument() {
 
     const { data: indRes, isLoading: isInd } = useIndicators(instrumentId, fromISO);
     const { data: sentRes, isLoading: isSent } = useSentiment(instrumentId, 14);
-    const { data: fcRes, isLoading: isFc } = useForecast(runId);
+    const { data: fcRes } = useForecast(runId);
     const startFc = useStartForecast();
     const { data: newsRes, isLoading: isNews } = useNews(instrumentId, 7);
 
