@@ -11,7 +11,7 @@ export function useInstrument(id: number) {
 export function useSearchInstruments(q: string) {
   return useQuery({
     queryKey: ["search", q],
-    queryFn: async () => (await api.get(`/instruments/search?q=${encodeURIComponent(q)}`)).data,
+    queryFn: async () => (await api.get(`/instruments/search?q=${q}`)).data as { id:number; symbol:string; name?:string }[],
     enabled: q.length >= 2,
   });
 }

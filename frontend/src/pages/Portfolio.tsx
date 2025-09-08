@@ -3,11 +3,16 @@ import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useParams } from "react-router-dom";
 import PerformanceChart from "../components/charts/PerformanceChart";
+import HoldingsImport from "../components/HoldingsImport";
+import HoldingsTable from "../components/HoldingsTable";
 import InsightsPanel from "../components/InsightsPanel";
 import { Spinner } from "../components/Loading";
 import RangePicker from "../components/RangePicker";
+import TransactionForm from "../components/TransactionForm";
+import { usePortfolioHoldings } from "../hooks/useHoldings";
 import { usePortfolioInsights } from "../hooks/useInsights";
 import { usePortfolioPerformance } from "../hooks/usePortfolio";
+
 
 export default function Portfolio() {
   const { id } = useParams();
@@ -16,6 +21,8 @@ export default function Portfolio() {
   const fromISO = useMemo(() => range==="max" ? undefined : subDays(new Date(), range==="90d"?90:range==="180d"?180:365).toISOString(), [range]);
   const { data, isLoading } = usePortfolioPerformance(id!, fromISO, benchmark);
   const insights = usePortfolioInsights();
+  const { data: holds, isLoading: isHoldLoading } = usePortfolioHoldings(id!);
+
 
 
   return (
@@ -69,6 +76,16 @@ export default function Portfolio() {
           ))}
         </div>
       )}
+
+      <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="font-medium">Holdings</h2>
+          <HoldingsImport portfolioId={id!} />
+        </div>
+        {isHoldLoading ? <Spinner label="Loading holdings…" /> : <HoldingsTable rows={holds || []} />}
+      </div>
+      <TransactionForm portfolioId={id!} />
+
       {insights.data?.insight ? <InsightsPanel text={insights.data.insight} /> : null}
 
     </div>

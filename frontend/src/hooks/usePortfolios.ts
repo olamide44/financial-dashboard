@@ -7,7 +7,7 @@ export function usePortfolios() {
   return useQuery<Portfolio[]>({
     queryKey: ["portfolios"],
     queryFn: async () => {
-      const { data } = await api.get("/portfolios"); // expects an array
+     const { data } = await api.get("/portfolios/me");
       return data;
     },
     staleTime: 60_000,

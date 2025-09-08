@@ -9,16 +9,31 @@ import PriceChart from "../components/charts/PriceChart";
 import SentimentChart from "../components/charts/SentimentChart";
 import { useForecast, useStartForecast } from "../hooks/useForecast";
 import { useIndicators } from "../hooks/useIndicators";
+import { useInstrument } from "../hooks/useInstruments";
 import { useNews } from "../hooks/useNews";
 import { useCandles } from "../hooks/usePrices";
 import { useSentiment } from "../hooks/useSentiment";
+import { useSyncPrices } from "../hooks/useSyncPrices";
+import { pushRecentInstrument } from "../lib/recent";
 import { getJSON, setJSON } from "../lib/storage";
+
 
 export default function Instrument() {
   const { id } = useParams();
   const instrumentId = Number(id);
+  const { data: inst } = useInstrument(instrumentId);
+  const sync = useSyncPrices(instrumentId);
+
+  
   const [range, setRange] = useState<"90d"|"180d"|"365d"|"max">("180d");
   const [runId, setRunId] = useState<number | undefined>();
+
+  // record recent instruments
+  useEffect(() => {
+    if (inst?.id && inst?.symbol) {
+      pushRecentInstrument({ id: inst.id, symbol: inst.symbol, name: inst.name });
+    }
+  }, [inst?.id, inst?.symbol, inst?.name]);
 
 
   const fromISO = useMemo(() => {
@@ -52,6 +67,20 @@ export default function Instrument() {
         <h1 className="text-xl font-semibold">Instrument #{instrumentId}</h1>
                 <div className="flex items-center gap-3">
           <RangePicker value={range} onChange={(v)=>setRange(v as any)} />
+                     <button
+            onClick={async ()=>{
+              if (!inst?.symbol) return;
+              try {
+                const res = await sync.mutateAsync({ symbol: inst.symbol, backfill_days: 365 });
+                const errs = (res as any)?.errors || [];
+                toast.success(`Synced. Inserted ${(res as any)?.inserted ?? 0}${errs.length?`, ${errs.length} error(s)`:``}`);
+              } catch(e:any){ toast.error(String(e?.response?.data?.detail || "Sync failed")); }
+            }}
+            className="px-3 py-1.5 text-sm rounded bg-slate-700 hover:bg-slate-600 disabled:opacity-60"
+            disabled={sync.isPending || !inst?.symbol}
+          >
+            {sync.isPending ? "Syncing…" : "Sync Prices"}
+          </button>
           <button
             onClick={async () => {
               try {
@@ -78,7 +107,8 @@ export default function Instrument() {
             candles={candles}
             indicators={indRes?.indicators}
             forecast={fcRes ? { points: fcRes.points } : undefined}
-            title="Price & Indicators"
+            title={`${inst?.symbol ?? "Instrument"} — Price & Indicators`}
+
           />
         )}
       </div>
