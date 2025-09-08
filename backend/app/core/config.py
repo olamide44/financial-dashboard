@@ -69,7 +69,13 @@ class Settings(BaseSettings):
     forecast_horizon_days: int = 7
     forecast_lookback_days: int = 730
     forecast_band_z: float = 1.96
-
+    
+    # AI / Insights
+    openai_api_key: str | None = None
+    ai_model: str = "gpt-4o-mini"
+    ai_max_tokens: int = 500
+    ai_temperature: float = 0.3
+    ai_disclaimer: str = "This is not financial advice."
 
 
     @field_validator("cors_origins", mode="before")
