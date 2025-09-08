@@ -7,8 +7,8 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation() as any;
   const from = location.state?.from?.pathname || "/";
-  const [email, setEmail] = useState("tester@example.com");
-  const [password, setPassword] = useState("pass1234");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const { mutateAsync, isPending, isError, error } = useLogin();
 
   const onSubmit = async (e: React.FormEvent) => {
