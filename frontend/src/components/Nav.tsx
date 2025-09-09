@@ -1,44 +1,41 @@
+import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { usePortfolios } from "../hooks/usePortfolios";
 import { logout } from "../lib/auth";
 import { getJSON, setJSON } from "../lib/storage";
 import SearchBox from "./SearchBox";
-
+import ThemeToggle from "./ThemeToggle";
 
 export default function Nav() {
-
   const navigate = useNavigate();
   const { data: portfolios, isLoading } = usePortfolios();
   const [selectedId, setSelectedId] = useState<string>("");
 
-  // load saved selection
   useEffect(() => {
     const saved = getJSON<string>("selected_portfolio_id");
     if (saved) setSelectedId(String(saved));
   }, []);
-
-  // default to first portfolio if none saved
   useEffect(() => {
-    if (!selectedId && portfolios && portfolios.length) {
-      const first = String(portfolios[0].id);
-      setSelectedId(first);
-      setJSON("selected_portfolio_id", first);
+    if (!selectedId && portfolios?.length) {
+      const id = String(portfolios[0].id);
+      setSelectedId(id);
+      setJSON("selected_portfolio_id", id);
     }
   }, [portfolios, selectedId]);
+
   return (
-    <header className="border-b border-slate-800/60 bg-slate-900/80 backdrop-blur">
-      <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link to="/" className="font-semibold">AI Finance Dashboard</Link>
-          <SearchBox />
+    <header className="sticky top-0 z-30 border-b border-border/70 backdrop-blur bg-bg/80">
+      <div className="container h-16 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link to="/" className="text-lg font-semibold tracking-tight">AI Finance</Link>
+          <div className="hidden md:block w-72"><SearchBox /></div>
         </div>
-        <nav className="flex items-center gap-4 text-sm">
+        <div className="flex items-center gap-2">
           {/* Portfolio selector */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs opacity-70">Portfolio</span>
+          <div className="relative">
             <select
-              className="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-sm min-w-40"
+              className="input h-10 w-48 pr-8 appearance-none"
               value={selectedId}
               onChange={(e) => {
                 const id = e.target.value;
@@ -48,26 +45,24 @@ export default function Nav() {
               }}
               disabled={isLoading || !portfolios?.length}
             >
-              {isLoading && <option>Loading…</option>}
-              {!isLoading && (!portfolios || portfolios.length === 0) && (
-                <option>No portfolios</option>
-              )}
-              {!isLoading &&
-                portfolios?.map((p) => (
-                  <option key={String(p.id)} value={String(p.id)}>
-                    {p.name || `Portfolio ${p.id}`}
-                  </option>
-                ))}
+              {isLoading && <option>Loading...</option>}
+              {!isLoading && portfolios?.map((p) => (
+                <option key={String(p.id)} value={String(p.id)}>
+                  {p.name || `Portfolio ${p.id}`}
+                </option>
+              ))}
             </select>
+            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-60" size={16}/>
           </div>
-          <Link to="/">Dashboard</Link>
+
+          <ThemeToggle />
           <button
             onClick={() => { logout(); window.location.href = "/login"; }}
-            className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700"
+            className="btn-ghost h-10 px-3 rounded-xl"
           >
             Logout
           </button>
-        </nav>
+        </div>
       </div>
     </header>
   );

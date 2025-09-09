@@ -6,7 +6,8 @@ import { RouterProvider } from "react-router-dom";
 import router from ".././src/routes";
 import "./index.css";
 import { queryClient } from "./lib/queryClient";
-
+import { setupChartDefaults } from "./lib/chartTheme";
+setupChartDefaults();
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>

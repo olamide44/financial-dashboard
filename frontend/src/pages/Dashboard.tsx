@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import NewPortfolio from "../components/NewPortfolio";
 import { usePortfolios } from "../hooks/usePortfolios";
 import { getRecentInstruments } from "../lib/recent";
 
@@ -9,35 +8,39 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-          <div className="text-sm opacity-70">Your Portfolios</div>
-          <div className="mt-3"><NewPortfolio /></div>
-          <ul className="mt-3 text-sm space-y-1">
-            {(portfolios || []).map((p) => (
-              <li key={String(p.id)}>
-                <Link className="underline" to={`/portfolio/${p.id}`}>
-                  {p.name || `Portfolio ${p.id}`}
-                </Link>
-                {p.base_currency ? <span className="opacity-60"> · {p.base_currency}</span> : null}
-              </li>
-            ))}
-            {!portfolios?.length && <li className="opacity-60">No portfolios</li>}
-          </ul>
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
+          <p className="text-sm text-text-muted">Welcome back — here’s your snapshot.</p>
         </div>
-        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 md:col-span-2">
-          <div className="text-sm opacity-70">Recent Instruments</div>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-4">
+        <div className="card p-4">
+          <div className="text-sm text-text-muted">Portfolios</div>
+          <div className="mt-2 space-y-2">
+            {(portfolios || []).map((p) => (
+              <Link key={String(p.id)} to={`/portfolio/${p.id}`} className="block p-3 rounded-xl bg-bg-soft border border-border hover:border-border-strong transition">
+                <div className="font-medium">{p.name || `Portfolio ${p.id}`}</div>
+                {p.base_currency && <div className="text-xs text-text-muted mt-0.5">{p.base_currency}</div>}
+              </Link>
+            ))}
+            {!portfolios?.length && <div className="text-sm text-text-muted">No portfolios yet.</div>}
+          </div>
+        </div>
+
+        <div className="card p-4 md:col-span-2">
+          <div className="text-sm text-text-muted">Recent Instruments</div>
           <div className="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {recents.length ? recents.map((r) => (
-              <Link key={r.id} to={`/instrument/${r.id}`} className="p-3 rounded-lg bg-slate-900/60 border border-slate-800 hover:bg-slate-800/60">
-                <div className="font-mono">{r.symbol}</div>
-                {r.name ? <div className="text-xs opacity-60">{r.name}</div> : null}
+              <Link key={r.id} to={`/instrument/${r.id}`} className="p-3 rounded-xl bg-bg-soft border border-border hover:border-border-strong transition">
+                <div className="font-mono font-medium">{r.symbol}</div>
+                {r.name ? <div className="text-xs text-text-muted">{r.name}</div> : null}
               </Link>
-            )) : <div className="opacity-60 text-sm">No recent instruments</div>}
+            )) : <div className="text-sm text-text-muted">No recent instruments.</div>}
           </div>
         </div>
       </div>
-   </div>
+    </div>
   );
 }

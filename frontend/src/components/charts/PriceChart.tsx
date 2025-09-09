@@ -108,7 +108,7 @@ export default function PriceChart({ candles, indicators, forecast, title }: Pro
   const options: any = {
     responsive: true,
     plugins: {
-      legend: { display: true },
+      legend: { display: true, position: "bottom", labels: { boxWidth: 10 } },
       title: { display: !!title, text: title },
       tooltip: { mode: "index", intersect: false },
     },
@@ -117,6 +117,7 @@ export default function PriceChart({ candles, indicators, forecast, title }: Pro
       x: { type: "time", time: { unit: "day" }, grid: { display: false } },
       y: { ticks: { callback: (v: number) => v.toFixed(2) } },
     },
+    layout: { padding: { top: 12, right: 8, left: 8, bottom: 4 } },
   };
 
   return <Line options={options} data={data} />;

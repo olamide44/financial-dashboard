@@ -23,10 +23,10 @@ export default function SearchBox() {
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="Search symbols (AAPL, MSFT)…"
-        className="w-full px-3 py-2 rounded-lg bg-slate-800/80 border border-slate-700 text-sm outline-none focus:ring-2 focus:ring-blue-600"
+        className="input h-10"
       />
       {q && (
-        <div className="absolute z-20 mt-1 w-full rounded-lg bg-slate-900 border border-slate-800 shadow-lg">
+        <div className="absolute z-20 mt-1 w-full rounded-2xl bg-bg-elevated border border-border shadow-card">
           {isFetching && (
             <div className="p-2 text-xs text-slate-400">Searching…</div>
           )}
@@ -42,7 +42,9 @@ export default function SearchBox() {
                 onClick={() => setQ("")}
               >
                 <span className="font-mono">{it.symbol}</span>
-                {it.name ? <span className="opacity-70"> — {it.name}</span> : null}
+                {it.name ? (
+                  <span className="opacity-70"> — {it.name}</span>
+                ) : null}
               </Link>
             ))}
         </div>
