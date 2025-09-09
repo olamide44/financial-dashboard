@@ -4,7 +4,7 @@ import { setAccessToken } from "../lib/auth";
 
 export function useLogin() {
   return useMutation({
-    mutationFn: async (payload: { email: string; password: string }) => {
+    mutationFn: async (payload: { username: string; password: string }) => {
       const res = await api.post("/auth/login", payload);
       return res.data;
     },
