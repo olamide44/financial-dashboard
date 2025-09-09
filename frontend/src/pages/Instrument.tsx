@@ -82,11 +82,32 @@ export default function Instrument() {
         </div>
         <div className="flex items-center gap-3">
           <RangePicker value={range} onChange={(v) => setRange(v as any)} />
-          <button className="btn-ghost h-10" /* Sync handler */>
-            Sync Prices
+          <button
+            className="btn-ghost h-10"
+            onClick={() => {
+              if (inst?.symbol) {
+                sync.mutate({ symbol: inst.symbol, backfill_days: 180 });
+              }
+            }}
+            disabled={sync.isPending}
+          >
+            {sync.isPending ? "Syncing…" : "Sync Prices"}
           </button>
-          <button className="btn h-10" /* Forecast handler */>
-            Forecast 7d
+          <button
+            className="btn h-10"
+            onClick={() => {
+              if (inst?.id) {
+                startFc.mutate({
+                  instrumentId: inst.id,
+                  horizon: 7, // forecast for 7 days
+                  lookback: 180, // use 180 days of history
+                  model: "ridge", // or "lasso"
+                });
+              }
+            }}
+            disabled={startFc.isPending}
+          >
+            {startFc.isPending ? "Forecasting…" : "Forecast 7d"}
           </button>
         </div>
       </div>

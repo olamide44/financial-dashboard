@@ -4,18 +4,6 @@ export function setupChartDefaults() {
   // plugin for color palettes
   Chart.register(Colors);
 
-  const isLight = document.documentElement.classList.contains("light") ||
-                  document.documentElement.classList.contains("theme-light") ||
-                  document.documentElement.classList.contains("light-theme") ||
-                  document.documentElement.classList.contains("light-mode") ||
-                  document.documentElement.classList.contains("lightmode") ||
-                  document.documentElement.classList.contains("light-mode-x") ||
-                  document.documentElement.classList.contains("light-mode-y") ||
-                  // fallback: check :root.light token
-                  document.documentElement.classList.contains("light") ||
-                  document.documentElement.classList.contains("theme--light") ||
-                  (document.querySelector(":root.light") ? true : false);
-
   const grid = getComputedStyle(document.documentElement).getPropertyValue("--border").trim() || "#1f2937";
   const text = getComputedStyle(document.documentElement).getPropertyValue("--text-muted").trim() || "#9ca3af";
 
